@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StyleMe — Outfit Idea Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pink: #D4537E;
+    --pink-light: #FBEAF0;
+    --pink-mid: #F4C0D1;
+    --purple: #534AB7;
+    --purple-light: #EEEDFE;
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --cream: #FDF8F5;
+    --dark: #1A1118;
+    --text: #2D2233;
+    --muted: #7A6B7E;
+    --border: rgba(212,83,126,0.15);
+    --white: #ffffff;
+    --shadow: 0 4px 24px rgba(83,74,183,0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(253,248,245,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 600;
+    color: var(--dark);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--pink); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    text-decoration: none; font-size: 14px; color: var(--muted);
+    font-weight: 500; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--pink); }
+  .nav-cta {
+    background: var(--pink); color: white;
+    border: none; padding: 10px 22px; border-radius: 50px;
+    font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+    text-decoration: none;
+  }
+  .nav-cta:hover { opacity: 0.88; }
+  .nav-mobile-toggle { display: none; background: none; border: none; cursor: pointer; font-size: 22px; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 80px 4rem 0;
+    gap: 3rem;
+    max-width: 1280px; margin: 0 auto;
+  }
+  .hero-text { padding-top: 2rem; }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--pink-light); color: var(--pink);
+    padding: 6px 16px; border-radius: 50px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.8px;
+    text-transform: uppercase; margin-bottom: 1.5rem;
+  }
+  .hero-eyebrow::before { content: '✦'; }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 600; line-height: 1.12;
+    color: var(--dark); margin-bottom: 1.25rem;
+  }
+  .hero h1 em { font-style: italic; color: var(--pink); }
+  .hero-desc {
+    font-size: 17px; color: var(--muted);
+    max-width: 480px; margin-bottom: 2rem; line-height: 1.7;
+  }
+  .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: white; padding: 14px 28px; border-radius: 50px;
+    font-size: 15px; font-weight: 500; text-decoration: none;
+    border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(212,83,126,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(212,83,126,0.4); }
+  .btn-outline {
+    background: transparent; color: var(--text);
+    border: 1.5px solid var(--border); padding: 14px 28px;
+    border-radius: 50px; font-size: 15px; font-weight: 500;
+    text-decoration: none; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--pink); color: var(--pink); }
+  .hero-stats { display: flex; gap: 2rem; margin-top: 2.5rem; }
+  .stat-item { text-align: left; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; color: var(--dark); }
+  .stat-lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* HERO IMAGES */
+  .hero-visual {
+    position: relative; height: 580px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hero-img-main {
+    width: 300px; height: 400px; border-radius: 24px;
+    object-fit: cover; position: relative; z-index: 2;
+    box-shadow: 0 20px 60px rgba(83,74,183,0.18);
+  }
+  .hero-img-float {
+    position: absolute; border-radius: 16px;
+    object-fit: cover; box-shadow: 0 12px 36px rgba(0,0,0,0.14);
+  }
+  .hero-img-float.left {
+    width: 160px; height: 200px;
+    left: 0; top: 80px; z-index: 1;
+    transform: rotate(-4deg);
+  }
+  .hero-img-float.right {
+    width: 150px; height: 190px;
+    right: 0; bottom: 80px; z-index: 3;
+    transform: rotate(3deg);
+  }
+  .hero-badge {
+    position: absolute; background: white;
+    border-radius: 16px; padding: 12px 16px;
+    box-shadow: var(--shadow); z-index: 4;
+    font-size: 13px; font-weight: 500; color: var(--dark);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero-badge.top { top: 60px; right: 20px; }
+  .hero-badge.bottom { bottom: 60px; left: 10px; }
+  .badge-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+  .badge-dot.pink { background: var(--pink); }
+
+  /* IMAGE PLACEHOLDERS (SVG-based beautiful fashion images) */
+  .fashion-img {
+    border-radius: inherit;
+    width: 100%; height: 100%;
+    display: block;
+  }
+
+  /* HOW IT WORKS */
+  .section { padding: 6rem 2rem; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-eyebrow {
+    text-align: center; font-size: 12px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--pink); margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 42px); font-weight: 600;
+    text-align: center; color: var(--dark); margin-bottom: 1rem;
+  }
+  .section-sub {
+    text-align: center; color: var(--muted); font-size: 16px;
+    max-width: 560px; margin: 0 auto 3.5rem;
+  }
+
+  .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+  .step-card {
+    background: white; border-radius: 20px; padding: 2rem 1.5rem;
+    border: 1px solid var(--border); text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+  .step-icon {
+    width: 56px; height: 56px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; margin: 0 auto 1rem;
+  }
+  .step-icon.pink { background: var(--pink-light); }
+  .step-icon.purple { background: var(--purple-light); }
+  .step-icon.teal { background: var(--teal-light); }
+  .step-icon.amber { background: #FAEEDA; }
+  .step-num {
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .step-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--dark); }
+  .step-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+  /* GENERATOR SECTION */
+  .generator-section {
+    background: white;
+    padding: 5rem 2rem;
+  }
+  .generator-inner {
+    max-width: 860px; margin: 0 auto;
+  }
+  .gen-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .gen-label span {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: white; font-size: 11px; display: flex;
+    align-items: center; justify-content: center; font-weight: 700;
+  }
+  .gen-row { margin-bottom: 1.75rem; }
+  .pill-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pill {
+    padding: 9px 18px; border-radius: 50px;
+    border: 1.5px solid #E8DFEA; font-size: 14px;
+    color: var(--muted); cursor: pointer; background: white;
+    transition: all 0.18s; font-family: 'Inter', sans-serif;
+    font-weight: 500;
+  }
+  .pill:hover { border-color: var(--pink-mid); color: var(--pink); }
+  .pill.sel-pink { background: var(--pink); border-color: var(--pink); color: white; }
+  .pill.sel-purple { background: var(--purple); border-color: var(--purple); color: white; }
+  .pill.sel-teal { background: var(--teal); border-color: var(--teal); color: white; }
+  .pill.sel-amber { background: #BA7517; border-color: #BA7517; color: white; }
+
+  .gen-btn {
+    width: 100%; padding: 18px; border-radius: 16px;
+    border: none; font-size: 17px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+    color: white; margin-top: 2rem;
+    box-shadow: 0 6px 28px rgba(212,83,126,0.32);
+    transition: transform 0.18s, box-shadow 0.18s;
+    letter-spacing: 0.2px;
+  }
+  .gen-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(212,83,126,0.42); }
+  .gen-btn:active { transform: scale(0.99); }
+  .gen-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* RESULT CARDS */
+  .result-section { display: none; max-width: 860px; margin: 3rem auto 0; }
+  .result-section.show { display: block; }
+  .result-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 600; color: var(--dark);
+    margin-bottom: 1.5rem; text-align: center;
+  }
+  .outfit-cards { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+  .outfit-card {
+    background: var(--cream); border: 1px solid var(--border);
+    border-radius: 20px; overflow: hidden;
+  }
+  .outfit-card-header {
+    background: linear-gradient(135deg, var(--pink-light), var(--purple-light));
+    padding: 1.5rem 1.75rem;
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .outfit-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 600; color: var(--dark);
+  }
+  .outfit-tag {
+    background: white; color: var(--pink); font-size: 12px;
+    font-weight: 600; padding: 4px 14px; border-radius: 50px;
+    border: 1px solid var(--pink-mid); margin-top: 4px; display: inline-block;
+  }
+  .color-swatch { display: flex; gap: 8px; margin-top: 12px; }
+  .swatch {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    position: relative; cursor: default;
+  }
+  .swatch-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .swatch-name { font-size: 12px; color: var(--muted); }
+  .outfit-body { padding: 1.5rem 1.75rem; }
+  .piece-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+  .piece-item {
+    background: white; border-radius: 14px;
+    padding: 14px; border: 1px solid var(--border);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .piece-emoji { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .piece-name { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+  .piece-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .style-tip {
+    background: var(--teal-light); border-radius: 12px;
+    padding: 14px 16px; display: flex; gap: 10px; align-items: flex-start;
+    border-left: 3px solid var(--teal);
+  }
+  .style-tip-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+  .style-tip-text { font-size: 14px; color: #085041; line-height: 1.6; }
+
+  /* BODY GUIDE */
+  .body-guide { padding: 5rem 2rem; background: white; }
+  .body-guide-inner { max-width: 1100px; margin: 0 auto; }
+  .shapes-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.25rem; margin-top: 2.5rem; }
+  .shape-card {
+    background: var(--cream); border-radius: 18px;
+    padding: 1.75rem 1rem 1.25rem;
+    text-align: center; border: 1px solid var(--border);
+    transition: all 0.2s; cursor: default;
+  }
+  .shape-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--pink-mid); }
+  .shape-svg { width: 60px; height: 80px; margin: 0 auto 1rem; display: block; }
+  .shape-name { font-size: 15px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+  .shape-hint { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* STYLE INSPIRATION */
+  .inspo-section { padding: 5rem 2rem; }
+  .inspo-inner { max-width: 1200px; margin: 0 auto; }
+  .inspo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2.5rem; }
+  .inspo-card {
+    border-radius: 20px; overflow: hidden;
+    position: relative; cursor: pointer;
+    transition: transform 0.2s; aspect-ratio: 3/4;
+  }
+  .inspo-card:hover { transform: scale(1.02); }
+  .inspo-card:hover .inspo-overlay { opacity: 1; }
+  .inspo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .inspo-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(26,17,24,0.8) 0%, transparent 50%);
+    opacity: 0.7; transition: opacity 0.3s;
+    display: flex; align-items: flex-end; padding: 1.5rem;
+  }
+  .inspo-label { color: white; }
+  .inspo-label h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; }
+  .inspo-label p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+  .inspo-tag {
+    display: inline-block; background: var(--pink); color: white;
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 50px; margin-bottom: 8px;
+  }
+
+  /* TESTIMONIALS */
+  .testimonials { background: var(--dark); padding: 5rem 2rem; }
+  .testimonials-inner { max-width: 1100px; margin: 0 auto; }
+  .testimonials .section-eyebrow { color: var(--pink-mid); }
+  .testimonials .section-title { color: white; }
+  .testimonials .section-sub { color: rgba(255,255,255,0.5); }
+  .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .testi-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px; padding: 1.75rem;
+  }
+  .stars { color: #FAC775; font-size: 16px; margin-bottom: 1rem; letter-spacing: 2px; }
+  .testi-quote {
+    font-size: 15px; color: rgba(255,255,255,0.8);
+    line-height: 1.7; margin-bottom: 1.25rem;
+    font-style: italic; font-family: 'Playfair Display', serif;
+  }
+  .testi-author { display: flex; align-items: center; gap: 12px; }
+  .testi-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; color: white; flex-shrink: 0;
+  }
+  .testi-name { font-size: 14px; font-weight: 600; color: white; }
+  .testi-role { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+  /* CTA SECTION */
+  .cta-section {
+    padding: 6rem 2rem; text-align: center;
+    background: linear-gradient(135deg, var(--pink-light) 0%, var(--purple-light) 100%);
+  }
+  .cta-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(30px, 5vw, 48px); font-weight: 600;
+    color: var(--dark); margin-bottom: 1rem;
+  }
+  .cta-section p { font-size: 17px; color: var(--muted); margin-bottom: 2rem; }
+
+  /* FOOTER */
+  footer {
+    background: var(--dark); color: rgba(255,255,255,0.5);
+    padding: 3rem 2rem; text-align: center; font-size: 14px;
+  }
+  .footer-inner { max-width: 1100px; margin: 0 auto; }
+  .footer-logo {
+    font-family: 'Playfair Display', serif; font-size: 24px;
+    color: white; margin-bottom: 1rem; display: block;
+  }
+  .footer-links { display: flex; gap: 2rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+  .footer-links a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--pink-mid); }
+  .footer-copy { font-size: 13px; }
+
+  /* LOADING */
+  .loading-state {
+    text-align: center; padding: 3rem; display: none;
+  }
+  .loading-state.show { display: block; }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid var(--pink-light);
+    border-top-color: var(--pink); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 1rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-state p { color: var(--muted); font-size: 15px; }
+
+  /* MOBILE NAV DRAWER */
+  .mobile-menu {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: white; padding: 2rem; flex-direction: column; gap: 1.5rem;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-close { background: none; border: none; font-size: 24px; cursor: pointer; align-self: flex-end; }
+  .mobile-menu a { font-size: 20px; color: var(--dark); text-decoration: none; font-weight: 500; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1024px) {
+    .hero { grid-template-columns: 1fr; padding: 90px 2rem 3rem; min-height: auto; }
+    .hero-visual { height: 380px; order: -1; }
+    .hero-img-main { width: 220px; height: 300px; }
+    .hero-img-float.left { width: 120px; height: 160px; left: 20px; }
+    .hero-img-float.right { width: 110px; height: 150px; right: 20px; }
+    .steps-grid { grid-template-columns: repeat(2, 1fr); }
+    .shapes-grid { grid-template-columns: repeat(3, 1fr); }
+    .testi-grid { grid-template-columns: 1fr 1fr; }
+    .inspo-grid { grid-template-columns: 1fr 1fr; }
+    .nav-links { display: none; }
+    .nav-mobile-toggle { display: block; }
+    .piece-list { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 32px; }
+    .steps-grid { grid-template-columns: 1fr; }
+    .shapes-grid { grid-template-columns: repeat(2, 1fr); }
+    .testi-grid { grid-template-columns: 1fr; }
+    .inspo-grid { grid-template-columns: 1fr; }
+    .hero-stats { gap: 1.5rem; }
+    .hero-btns { flex-direction: column; }
+    .btn-primary, .btn-outline { text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Style<span>Me</span></a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#generator">Generator</a></li>
+    <li><a href="#guide">Body guide</a></li>
+    <li><a href="#inspiration">Inspiration</a></li>
+  </ul>
+  <a href="#generator" class="nav-cta">Try it free →</a>
+  <button class="nav-mobile-toggle" onclick="document.querySelector('.mobile-menu').classList.add('open')" aria-label="Open menu">☰</button>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <button class="mobile-close" onclick="document.querySelector('.mobile-menu').classList.remove('open')">✕</button>
+  <a href="#how" onclick="document.querySelector('.mobile-menu').classList.remove('open')">How it works</a>
+  <a href="#generator" onclick="document.querySelector('.mobile-menu').classList.remove('open')">Generator</a>
+  <a href="#guide" onclick="document.querySelector('.mobile-menu').classList.remove('open')">Body guide</a>
+  <a href="#inspiration" onclick="document.querySelector('.mobile-menu').classList.remove('open')">Inspiration</a>
+</div>
+
+<!-- HERO -->
+<section style="background: var(--cream); padding-top: 0;">
+  <div class="hero">
+    <div class="hero-text">
+      <div class="hero-eyebrow">AI-Powered Fashion Stylist</div>
+      <h1>Outfits made <em>for your</em> shape & style</h1>
+      <p class="hero-desc">Answer four quick questions and get personalized outfit ideas curated by AI — designed to flatter your body type and match your vibe.</p>
+      <div class="hero-btns">
+        <a href="#generator" class="btn-primary">✦ Generate my look</a>
+        <a href="#how" class="btn-outline">See how it works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">50K+</div>
+          <div class="stat-lbl">Outfits created</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">7</div>
+          <div class="stat-lbl">Body types covered</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">8</div>
+          <div class="stat-lbl">Style vibes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <!-- Main image -->
+      <svg class="hero-img-main fashion-img" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+        <rect width="300" height="400" fill="#F2D5E0" rx="24"/>
+        <ellipse cx="150" cy="90" rx="45" ry="50" fill="#F5C5A3"/>
+        <ellipse cx="150" cy="78" rx="38" ry="40" fill="#F0B090"/>
+        <rect x="100" y="135" width="100" height="130" rx="8" fill="#C2185B"/>
+        <path d="M100 145 L60 200 L80 210 L110 165Z" fill="#C2185B"/>
+        <path d="M200 145 L240 200 L220 210 L190 165Z" fill="#C2185B"/>
+        <rect x="105" y="265" width="40" height="120" rx="6" fill="#880E4F"/>
+        <rect x="155" y="265" width="40" height="120" rx="6" fill="#880E4F"/>
+        <ellipse cx="130" cy="170" rx="18" ry="5" fill="#FCEEF6" opacity="0.6"/>
+        <circle cx="150" cy="78" r="6" fill="#F5C5A3"/>
+        <ellipse cx="138" cy="72" rx="4" ry="5" fill="#333" opacity="0.5"/>
+        <ellipse cx="162" cy="72" rx="4" ry="5" fill="#333" opacity="0.5"/>
+        <path d="M140 88 Q150 95 160 88" stroke="#C0706A" stroke-width="2" fill="none"/>
+        <ellipse cx="130" cy="108" rx="18" ry="12" fill="#D4856A" opacity="0.4"/>
+        <rect x="125" y="52" width="50" height="30" rx="25" fill="#3D2314" opacity="0.85"/>
+        <path d="M120 60 Q150 40 180 60" stroke="#3D2314" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <text x="150" y="395" text-anchor="middle" font-size="11" fill="#9C4470" font-family="Georgia,serif" opacity="0.7">StyleMe Look</text>
+      </svg>
+
+      <!-- Float left -->
+      <svg class="hero-img-float left fashion-img" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+        <rect width="160" height="200" fill="#EDE7F6" rx="16"/>
+        <ellipse cx="80" cy="55" rx="28" ry="30" fill="#F5C5A3"/>
+        <rect x="50" y="82" width="60" height="85" rx="6" fill="#7C4DFF"/>
+        <rect x="30" y="88" width="25" height="70" rx="5" fill="#7C4DFF"/>
+        <rect x="105" y="88" width="25" height="70" rx="5" fill="#7C4DFF"/>
+        <rect x="55" y="167" width="22" height="28" rx="4" fill="#4527A0"/>
+        <rect x="83" y="167" width="22" height="28" rx="4" fill="#4527A0"/>
+        <ellipse cx="72" cy="96" rx="10" ry="3" fill="white" opacity="0.4"/>
+        <text x="80" y="196" text-anchor="middle" font-size="9" fill="#7C4DFF" font-family="Georgia,serif">Boho Chic</text>
+      </svg>
+
+      <!-- Float right -->
+      <svg class="hero-img-float right fashion-img" viewBox="0 0 150 190" xmlns="http://www.w3.org/2000/svg">
+        <rect width="150" height="190" fill="#FCE4EC" rx="16"/>
+        <ellipse cx="75" cy="48" rx="25" ry="28" fill="#F5C5A3"/>
+        <rect x="48" y="73" width="54" height="90" rx="6" fill="#E91E63"/>
+        <path d="M48 82 L22 130 L40 135 L58 95Z" fill="#E91E63"/>
+        <path d="M102 82 L128 130 L110 135 L92 95Z" fill="#E91E63"/>
+        <path d="M48 163 Q75 185 102 163" stroke="#E91E63" stroke-width="18" fill="none"/>
+        <ellipse cx="65" cy="88" rx="8" ry="3" fill="white" opacity="0.35"/>
+        <text x="75" y="186" text-anchor="middle" font-size="9" fill="#C2185B" font-family="Georgia,serif">Evening Glam</text>
+      </svg>
+
+      <!-- Badges -->
+      <div class="hero-badge top">
+        <span class="badge-dot"></span>
+        <span>AI-personalized for you</span>
+      </div>
+      <div class="hero-badge bottom">
+        <span class="badge-dot pink"></span>
+        <span>Flatters every body</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-inner">
+    <div class="section-eyebrow">How it works</div>
+    <h2 class="section-title">Four steps to your perfect outfit</h2>
+    <p class="section-sub">Our AI combines your body shape, personal style, and the occasion to deliver looks made just for you.</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-icon pink">👤</div>
+        <div class="step-num">Step 01</div>
+        <h3>Pick your shape</h3>
+        <p>Choose from 7 body types — from hourglass to petite — so we know how to highlight your best features.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-icon purple">💜</div>
+        <div class="step-num">Step 02</div>
+        <h3>Choose your vibe</h3>
+        <p>Boho, minimalist, streetwear, or classic? Select the aesthetic that speaks to your personality.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-icon teal">🎉</div>
+        <div class="step-num">Step 03</div>
+        <h3>Set the occasion</h3>
+        <p>Date night, office, brunch, or vacation — your outfit should match the moment perfectly.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-icon amber">✨</div>
+        <div class="step-num">Step 04</div>
+        <h3>Get your looks</h3>
+        <p>Receive 3 complete outfit ideas with pieces, color palettes, and expert styling tips.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GENERATOR -->
+<section class="generator-section" id="generator">
+  <div class="generator-inner">
+    <div class="section-eyebrow">AI Outfit Generator</div>
+    <h2 class="section-title">Build your perfect look</h2>
+    <p class="section-sub">Select your preferences below and our AI stylist will create personalized outfits for you.</p>
+
+    <div class="gen-row">
+      <div class="gen-label"><span>1</span> Your body shape</div>
+      <div class="pill-wrap" id="body-pills">
+        <button class="pill" data-g="body" data-c="sel-pink">⌛ Hourglass</button>
+        <button class="pill" data-g="body" data-c="sel-pink">🍐 Pear</button>
+        <button class="pill" data-g="body" data-c="sel-pink">🍎 Apple</button>
+        <button class="pill" data-g="body" data-c="sel-pink">📏 Rectangle</button>
+        <button class="pill" data-g="body" data-c="sel-pink">🔺 Inverted triangle</button>
+        <button class="pill" data-g="body" data-c="sel-pink">🌸 Petite</button>
+        <button class="pill" data-g="body" data-c="sel-pink">💪 Plus size</button>
+      </div>
+    </div>
+
+    <div class="gen-row">
+      <div class="gen-label"><span>2</span> Your style vibe</div>
+      <div class="pill-wrap" id="style-pills">
+        <button class="pill" data-g="style" data-c="sel-purple">✨ Casual chic</button>
+        <button class="pill" data-g="style" data-c="sel-purple">🌿 Boho</button>
+        <button class="pill" data-g="style" data-c="sel-purple">🖤 Minimalist</button>
+        <button class="pill" data-g="style" data-c="sel-purple">🎨 Bold & colorful</button>
+        <button class="pill" data-g="style" data-c="sel-purple">👑 Classic elegant</button>
+        <button class="pill" data-g="style" data-c="sel-purple">🧢 Streetwear</button>
+        <button class="pill" data-g="style" data-c="sel-purple">🌹 Romantic</button>
+        <button class="pill" data-g="style" data-c="sel-purple">⚡ Sporty</button>
+      </div>
+    </div>
+
+    <div class="gen-row">
+      <div class="gen-label"><span>3</span> Occasion</div>
+      <div class="pill-wrap" id="occasion-pills">
+        <button class="pill" data-g="occasion" data-c="sel-teal">☀️ Everyday</button>
+        <button class="pill" data-g="occasion" data-c="sel-teal">💼 Work / office</button>
+        <button class="pill" data-g="occasion" data-c="sel-teal">💕 Date night</button>
+        <button class="pill" data-g="occasion" data-c="sel-teal">🥂 Weekend brunch</button>
+        <button class="pill" data-g="occasion" data-c="sel-teal">🎉 Party / event</button>
+        <button class="pill" data-g="occasion" data-c="sel-teal">💒 Wedding guest</button>
+        <button class="pill" data-g="occasion" data-c="sel-teal">✈️ Vacation</button>
+      </div>
+    </div>
+
+    <div class="gen-row">
+      <div class="gen-label"><span>4</span> Season</div>
+      <div class="pill-wrap" id="season-pills">
+        <button class="pill" data-g="season" data-c="sel-amber">🌸 Spring</button>
+        <button class="pill" data-g="season" data-c="sel-amber">☀️ Summer</button>
+        <button class="pill" data-g="season" data-c="sel-amber">🍂 Autumn</button>
+        <button class="pill" data-g="season" data-c="sel-amber">❄️ Winter</button>
+      </div>
+    </div>
+
+    <button class="gen-btn" id="gen-btn" onclick="generateOutfit()">✦ Generate my outfit ideas</button>
+
+    <div class="loading-state" id="loading">
+      <div class="spinner"></div>
+      <p>Our AI stylist is curating your perfect looks…</p>
+    </div>
+
+    <div class="result-section" id="result-section">
+      <h2 class="result-heading" id="result-heading"></h2>
+      <div class="outfit-cards" id="outfit-cards"></div>
+      <div style="text-align:center;margin-top:2rem">
+        <button onclick="resetAll()" style="background:none;border:1.5px solid #E8DFEA;color:var(--muted);padding:10px 24px;border-radius:50px;cursor:pointer;font-size:14px;font-family:'Inter',sans-serif;transition:all 0.2s" onmouseover="this.style.borderColor='var(--pink)';this.style.color='var(--pink)'" onmouseout="this.style.borderColor='#E8DFEA';this.style.color='var(--muted)'">← Start over</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BODY SHAPE GUIDE -->
+<section class="body-guide" id="guide">
+  <div class="body-guide-inner">
+    <div class="section-eyebrow">Body shape guide</div>
+    <h2 class="section-title">Every shape is beautiful</h2>
+    <p class="section-sub">Understanding your shape helps you choose cuts and styles that make you feel incredible.</p>
+
+    <div class="shapes-grid">
+      <!-- Hourglass -->
+      <div class="shape-card">
+        <svg class="shape-svg" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="30" cy="12" rx="16" ry="12" fill="#F4C0D1"/>
+          <path d="M14 24 Q10 40 18 52 L42 52 Q50 40 46 24Z" fill="#D4537E"/>
+          <ellipse cx="30" cy="52" rx="18" ry="14" fill="#F4C0D1"/>
+          <rect x="22" y="66" width="7" height="14" rx="3" fill="#D4537E"/>
+          <rect x="31" y="66" width="7" height="14" rx="3" fill="#D4537E"/>
+        </svg>
+        <div class="shape-name">Hourglass</div>
+        <div class="shape-hint">Balanced shoulders & hips with a defined waist</div>
+      </div>
+      <!-- Pear -->
+      <div class="shape-card">
+        <svg class="shape-svg" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="30" cy="12" rx="13" ry="11" fill="#CECBF6"/>
+          <path d="M17 23 Q15 38 12 52 L48 52 Q45 38 43 23Z" fill="#7F77DD"/>
+          <ellipse cx="30" cy="52" rx="20" ry="14" fill="#CECBF6"/>
+          <rect x="22" y="66" width="7" height="14" rx="3" fill="#7F77DD"/>
+          <rect x="31" y="66" width="7" height="14" rx="3" fill="#7F77DD"/>
+        </svg>
+        <div class="shape-name">Pear</div>
+        <div class="shape-hint">Narrower shoulders, fuller hips & thighs</div>
+      </div>
+      <!-- Apple -->
+      <div class="shape-card">
+        <svg class="shape-svg" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="30" cy="12" rx="14" ry="11" fill="#9FE1CB"/>
+          <ellipse cx="30" cy="38" rx="20" ry="18" fill="#1D9E75"/>
+          <ellipse cx="30" cy="52" rx="16" ry="12" fill="#9FE1CB"/>
+          <rect x="22" y="64" width="7" height="16" rx="3" fill="#1D9E75"/>
+          <rect x="31" y="64" width="7" height="16" rx="3" fill="#1D9E75"/>
+        </svg>
+        <div class="shape-name">Apple</div>
+        <div class="shape-hint">Fuller midsection with slimmer legs</div>
+      </div>
+      <!-- Rectangle -->
+      <div class="shape-card">
+        <svg class="shape-svg" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="30" cy="12" rx="14" ry="11" fill="#FAC775"/>
+          <rect x="16" y="23" width="28" height="32" rx="6" fill="#BA7517"/>
+          <ellipse cx="30" cy="55" rx="14" ry="9" fill="#FAC775"/>
+          <rect x="22" y="64" width="7" height="16" rx="3" fill="#BA7517"/>
+          <rect x="31" y="64" width="7" height="16" rx="3" fill="#BA7517"/>
+        </svg>
+        <div class="shape-name">Rectangle</div>
+        <div class="shape-hint">Similar shoulder & hip width, athletic build</div>
+      </div>
+      <!-- Inverted Triangle -->
+      <div class="shape-card">
+        <svg class="shape-svg" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="30" cy="12" rx="18" ry="11" fill="#F0997B"/>
+          <path d="M12 23 L48 23 L38 55 L22 55Z" fill="#D85A30"/>
+          <ellipse cx="30" cy="55" rx="13" ry="9" fill="#F0997B"/>
+          <rect x="23" y="64" width="6" height="16" rx="3" fill="#D85A30"/>
+          <rect x="31" y="64" width="6" height="16" rx="3" fill="#D85A30"/>
+        </svg>
+        <div class="shape-name">Inverted triangle</div>
+        <div class="shape-hint">Broader shoulders tapering to narrower hips</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STYLE INSPIRATION -->
+<section class="inspo-section" id="inspiration">
+  <div class="inspo-inner">
+    <div class="section-eyebrow">Style inspiration</div>
+    <h2 class="section-title">Find your aesthetic</h2>
+    <p class="section-sub">Browse these style moods to discover what resonates with you before generating your outfits.</p>
+    <div class="inspo-grid">
+      <!-- Boho -->
+      <div class="inspo-card">
+        <svg class="inspo-img" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+          <rect width="300" height="400" fill="#EDE0D4"/>
+          <rect x="0" y="200" width="300" height="200" fill="#D4B896"/>
+          <ellipse cx="150" cy="80" rx="40" ry="44" fill="#F5C5A3"/>
+          <path d="M100 118 Q80 160 70 240 L230 240 Q220 160 200 118Z" fill="#8D6E63"/>
+          <path d="M70 240 Q60 310 55 400 L145 400 L140 240Z" fill="#6D4C41"/>
+          <path d="M230 240 Q240 310 245 400 L155 400 L160 240Z" fill="#6D4C41"/>
+          <ellipse cx="100" cy="170" rx="30" ry="12" fill="#8D6E63" opacity="0.5"/>
+          <ellipse cx="200" cy="170" rx="30" ry="12" fill="#8D6E63" opacity="0.5"/>
+          <path d="M120 145 Q150 130 180 145" stroke="#A1887F" stroke-width="20" fill="none" opacity="0.4"/>
+          <!-- Hair -->
+          <path d="M110 60 Q150 30 190 60 Q200 90 190 100 Q170 40 150 45 Q130 40 110 100 Q100 90Z" fill="#4E342E"/>
+          <!-- Floral headband -->
+          <ellipse cx="125" cy="55" rx="8" ry="6" fill="#FF8A65"/>
+          <ellipse cx="115" cy="50" rx="6" ry="5" fill="#FFCC02"/>
+          <ellipse cx="135" cy="48" rx="7" ry="5" fill="#FF7043"/>
+          <!-- Boho necklace -->
+          <path d="M130 125 Q150 140 170 125" stroke="#A1887F" stroke-width="1.5" fill="none"/>
+          <circle cx="150" cy="138" r="4" fill="#FFB74D"/>
+        </svg>
+        <div class="inspo-overlay">
+          <div class="inspo-label">
+            <span class="inspo-tag">Free spirit</span>
+            <h3>Boho Wanderer</h3>
+            <p>Earthy tones, flowy fabrics, natural accessories</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Classic Elegant -->
+      <div class="inspo-card">
+        <svg class="inspo-img" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+          <rect width="300" height="400" fill="#FAFAFA"/>
+          <rect x="0" y="280" width="300" height="120" fill="#F5F5F5"/>
+          <ellipse cx="150" cy="75" rx="38" ry="42" fill="#F5C5A3"/>
+          <rect x="95" y="112" width="110" height="160" rx="4" fill="#1A1A2E"/>
+          <path d="M95 122 L55 190 L80 200 L108 140Z" fill="#1A1A2E"/>
+          <path d="M205 122 L245 190 L220 200 L192 140Z" fill="#1A1A2E"/>
+          <path d="M95 272 Q150 300 205 272 L205 400 L95 400Z" fill="#16213E"/>
+          <!-- White collar -->
+          <path d="M120 115 L150 140 L180 115 L170 112 L150 130 L130 112Z" fill="white"/>
+          <!-- Hair up -->
+          <ellipse cx="150" cy="48" rx="30" ry="25" fill="#3D2314"/>
+          <ellipse cx="150" cy="34" rx="22" ry="10" fill="#3D2314"/>
+          <circle cx="150" cy="24" r="8" fill="#5D4037"/>
+          <!-- Pearl necklace -->
+          <path d="M125 120 Q150 132 175 120" stroke="#E0E0E0" stroke-width="2" fill="none"/>
+          <circle cx="135" cy="124" r="3" fill="white" stroke="#DDD" stroke-width="0.5"/>
+          <circle cx="145" cy="128" r="3" fill="white" stroke="#DDD" stroke-width="0.5"/>
+          <circle cx="155" cy="128" r="3" fill="white" stroke="#DDD" stroke-width="0.5"/>
+          <circle cx="165" cy="124" r="3" fill="white" stroke="#DDD" stroke-width="0.5"/>
+          <!-- Heels hint -->
+          <rect x="116" y="375" width="22" height="8" rx="2" fill="#16213E"/>
+          <rect x="162" y="375" width="22" height="8" rx="2" fill="#16213E"/>
+          <rect x="134" y="368" width="4" height="12" rx="2" fill="#16213E"/>
+          <rect x="180" y="368" width="4" height="12" rx="2" fill="#16213E"/>
+        </svg>
+        <div class="inspo-overlay">
+          <div class="inspo-label">
+            <span class="inspo-tag">Timeless</span>
+            <h3>Classic Elegant</h3>
+            <p>Tailored cuts, neutral palette, refined details</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bold & Colorful -->
+      <div class="inspo-card">
+        <svg class="inspo-img" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+          <rect width="300" height="400" fill="#FFF9C4"/>
+          <rect x="0" y="250" width="300" height="150" fill="#FCE4EC"/>
+          <ellipse cx="150" cy="72" rx="38" ry="42" fill="#FFCCBC"/>
+          <rect x="90" y="108" width="120" height="150" rx="6" fill="#E040FB"/>
+          <path d="M90 118 L48 180 L75 192 L104 138Z" fill="#E040FB"/>
+          <path d="M210 118 L252 180 L225 192 L196 138Z" fill="#E040FB"/>
+          <!-- Bold skirt -->
+          <path d="M90 258 Q150 290 210 258 L225 400 L75 400Z" fill="#FF6F00"/>
+          <!-- Belt -->
+          <rect x="90" y="252" width="120" height="12" rx="6" fill="#F50057"/>
+          <!-- Belt buckle -->
+          <rect x="142" y="252" width="16" height="12" rx="2" fill="#FFD700"/>
+          <!-- Colorful hair -->
+          <path d="M112 55 Q150 25 188 55 Q200 85 185 95 Q165 35 150 40 Q135 35 115 95 Q100 85Z" fill="#FF4081"/>
+          <path d="M188 55 Q210 80 195 110" stroke="#7C4DFF" stroke-width="8" fill="none" stroke-linecap="round"/>
+          <!-- Statement earrings -->
+          <circle cx="112" cy="90" r="6" fill="#FFD600"/>
+          <rect x="109" y="96" width="6" height="14" rx="3" fill="#FF4081"/>
+          <!-- Sunglasses -->
+          <rect x="124" y="68" width="22" height="14" rx="7" fill="#333" opacity="0.85"/>
+          <rect x="154" y="68" width="22" height="14" rx="7" fill="#333" opacity="0.85"/>
+          <line x1="146" y1="74" x2="154" y2="74" stroke="#333" stroke-width="2"/>
+        </svg>
+        <div class="inspo-overlay">
+          <div class="inspo-label">
+            <span class="inspo-tag">Statement</span>
+            <h3>Bold & Colorful</h3>
+            <p>Vibrant hues, daring combinations, expressive style</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="testimonials">
+  <div class="testimonials-inner">
+    <div class="section-eyebrow">What our users say</div>
+    <h2 class="section-title">Real women, real style wins</h2>
+    <p class="section-sub">Thousands of women have discovered outfits that make them feel confident and beautiful.</p>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-quote">"I've been a pear shape my whole life and never knew what to wear. StyleMe gave me outfit ideas that actually made me feel gorgeous — not just okay."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background: linear-gradient(135deg,#D4537E,#534AB7)">SR</div>
+          <div>
+            <div class="testi-name">Sofia R.</div>
+            <div class="testi-role">Blogger · Toronto</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-quote">"The color palettes suggested were something I'd never tried, but they worked perfectly with my skin tone. This tool changed how I shop."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background: linear-gradient(135deg,#1D9E75,#534AB7)">AM</div>
+          <div>
+            <div class="testi-name">Ayesha M.</div>
+            <div class="testi-role">Teacher · London</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-quote">"As a plus-size woman, finding style inspiration that actually fits my body used to be exhausting. StyleMe gets it right every time."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background: linear-gradient(135deg,#D4537E,#E040FB)">JL</div>
+          <div>
+            <div class="testi-name">Jessica L.</div>
+            <div class="testi-role">Designer · New York</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to find your signature look?</h2>
+  <p>Join thousands of women discovering outfits that celebrate their unique beauty.</p>
+  <a href="#generator" class="btn-primary" style="display:inline-block">✦ Generate my outfits now</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-logo">StyleMe</span>
+    <div class="footer-links">
+      <a href="#">About</a>
+      <a href="#">Style Guide</a>
+      <a href="#">Body Types</a>
+      <a href="#">Blog</a>
+      <a href="#">Privacy</a>
+      <a href="#">Contact</a>
+    </div>
+    <p class="footer-copy">© 2025 StyleMe. Crafted with 💕 for every body, every style.</p>
+  </div>
+</footer>
+
+<script>
+const sel = { body: null, style: null, occasion: null, season: null };
+
+document.querySelectorAll('.pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const g = btn.dataset.g;
+    const c = btn.dataset.c;
+    document.querySelectorAll(`.pill[data-g="${g}"]`).forEach(b => {
+      b.classList.remove('sel-pink','sel-purple','sel-teal','sel-amber');
+    });
+    btn.classList.add(c);
+    sel[g] = btn.textContent.replace(/[🌸☀️🍂❄️⌛🍐🍎📏🔺💪✨🌿🖤🎨👑🧢🌹⚡💼💕🥂🎉💒✈️]/gu,'').trim();
+  });
+});
+
+async function generateOutfit() {
+  const missing = Object.entries(sel).filter(([,v])=>!v).map(([k])=>k);
+  if (missing.length) { alert('Please select: ' + missing.join(', ')); return; }
+
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('result-section').classList.remove('show');
+
+  const prompt = `You are a professional fashion stylist. A woman with a ${sel.body} body shape wants ${sel.style} style outfits for ${sel.occasion} in ${sel.season}.
+
+Give exactly 3 complete outfit ideas. Respond ONLY with a valid JSON array, no markdown, no backticks:
+[
+  {
+    "name": "Creative outfit name (4-6 words)",
+    "tag": "Style keyword (2 words max)",
+    "tip": "One specific styling tip for a ${sel.body} body shape (1 sentence, practical)",
+    "colors": ["#hex1","#hex2","#hex3"],
+    "colorNames": ["name1","name2","name3"],
+    "pieces": [
+      {"emoji":"👗","name":"Item name","desc":"Specific cut, color, fabric description"},
+      {"emoji":"👠","name":"Item name","desc":"Specific description"},
+      {"emoji":"👜","name":"Item name","desc":"Specific description"},
+      {"emoji":"💎","name":"Accessory","desc":"Specific description"}
+    ]
+  }
+]`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content.map(b => b.text||'').join('');
+    const clean = text.replace(/```json|```/g,'').trim();
+    const outfits = JSON.parse(clean);
+    renderOutfits(outfits);
+    document.getElementById('result-heading').textContent = `Your ${sel.style} looks for ${sel.occasion} ✦`;
+    document.getElementById('result-section').classList.add('show');
+    document.getElementById('result-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(e) {
+    alert('Something went wrong. Please try again.');
+  }
+
+  document.getElementById('loading').classList.remove('show');
+  btn.disabled = false;
+}
+
+function renderOutfits(outfits) {
+  const container = document.getElementById('outfit-cards');
+  container.innerHTML = '';
+  outfits.forEach(o => {
+    const dots = o.colors.map((c,i) => `<div class="swatch" style="background:${c}" title="${o.colorNames[i]}"></div>`).join('');
+    const colorNames = o.colorNames.map(n => `<span class="swatch-name">${n}</span>`).join('');
+    const pieces = o.pieces.map(p => `
+      <div class="piece-item">
+        <div class="piece-emoji">${p.emoji}</div>
+        <div>
+          <div class="piece-name">${p.name}</div>
+          <div class="piece-desc">${p.desc}</div>
+        </div>
+      </div>`).join('');
+
+    container.innerHTML += `
+      <div class="outfit-card">
+        <div class="outfit-card-header">
+          <div>
+            <div class="outfit-name">${o.name}</div>
+            <span class="outfit-tag">${o.tag}</span>
+            <div class="swatch-row">${dots}${colorNames}</div>
+          </div>
+        </div>
+        <div class="outfit-body">
+          <div class="piece-list">${pieces}</div>
+          <div class="style-tip">
+            <div class="style-tip-icon">💡</div>
+            <div class="style-tip-text"><strong>Stylist tip:</strong> ${o.tip}</div>
+          </div>
+        </div>
+      </div>`;
+  });
+}
+
+function resetAll() {
+  Object.keys(sel).forEach(k => sel[k] = null);
+  document.querySelectorAll('.pill').forEach(b => b.classList.remove('sel-pink','sel-purple','sel-teal','sel-amber'));
+  document.getElementById('result-section').classList.remove('show');
+  document.getElementById('generator').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
